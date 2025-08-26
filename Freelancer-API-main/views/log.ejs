@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Log Time | Freelancer App</title>
+  <link rel="stylesheet" href="/css/log.css" />
+</head>
+
+<body>
+  <div class="log-container">
+    <h1>Log Time</h1>
+    <p>Track time spent on projects.</p>
+
+    <!-- Start Timer -->
+    <h3>Start Timer</h3>
+    <form id="start-form">
+      <input type="text" id="project" placeholder="Project Name" required />
+      <input type="text" id="note" placeholder="Note (optional)" />
+      <button type="submit">Start Timer</button>
+    </form>
+
+    <!-- Stop/Delete Timer -->
+    <h3>Stop/Delete Timer</h3>
+    <input type="text" id="log-id" placeholder="Log ID" />
+    <button id="stop-timer">Stop Timer</button>
+    <button id="delete-timer">Delete Timer</button>
+
+    <!-- Actions -->
+    <div class="log-actions">
+      <button id="get-logs">GET All Logs</button>
+      <button id="export-csv">Export as CSV</button>
+      <button onclick="location.href='/dashboard'">⬅ Back to Dashboard</button>
+    </div>
+
+    <pre id="result"></pre>
+  </div>
+
+  <script>
+    const resultEl = document.getElementById("result");
+    const token = localStorage.getItem("accessToken");
+
+    // Start Timer
+    document.getElementById("start-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const project = document.getElementById("project").value;
+      const note = document.getElementById("note").value;
+
+      try {
+        const res = await fetch("/log", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ project, note }),
+        });
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    });
+
+    // Stop Timer
+    document.getElementById("stop-timer").onclick = async () => {
+      const id = document.getElementById("log-id").value;
+      if (!id) return alert("Enter Log ID to stop");
+
+      try {
+        const res = await fetch(`/log/${id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    };
+
+    // Delete Timer
+    document.getElementById("delete-timer").onclick = async () => {
+      const id = document.getElementById("log-id").value;
+      if (!id) return alert("Enter Log ID to delete");
+
+      try {
+        const res = await fetch(`/log/${id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    };
+
+    // Get All Logs
+    document.getElementById("get-logs").onclick = async () => {
+      try {
+        const res = await fetch("/log", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    };
+
+    // Export CSV
+    document.getElementById("export-csv").onclick = () => {
+      window.location.href = "/log/export";
+    };
+  </script>
+</body>
+
+</html>

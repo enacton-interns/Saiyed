@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Freelancer App</title>
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+
+<body>
+  <div class="dashboard-container">
+    <h1 id="welcome">Welcome!</h1>
+    <p>This is your dashboard.</p>
+
+    <div class="dashboard-buttons">
+      <button onclick="location.href='/project'">Go to Project Page</button>
+      <button onclick="location.href='/log-time'">Go to Log Time Page</button>
+    </div>
+
+    <button id="logout-btn">Logout</button>
+  </div>
+
+  <script>
+    // Check token
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      window.location.href = "/";
+    }
+
+    const decodeToken = (token) => {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload?.UserInfo?.username || "User";
+      } catch (e) {
+        return "User";
+      }
+    };
+
+    const username = decodeToken(token);
+    document.getElementById("welcome").textContent = `Welcome, ${username}!`;
+
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      localStorage.removeItem("accessToken");
+      window.location.href = "/";
+    });
+  </script>
+</body>
+
+</html>

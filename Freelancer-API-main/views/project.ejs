@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Management | Freelancer App</title>
+  <link rel="stylesheet" href="/css/project.css" />
+</head>
+
+<body>
+  <div class="project-container">
+    <h1>Project Management</h1>
+    <p>Perform CRUD operations on your projects.</p>
+
+    <div class="project-buttons">
+      <button id="get-projects">GET Projects</button>
+    </div>
+
+    <h3>Create / Update Project</h3>
+    <form id="project-form">
+      <input type="number" id="project-id" placeholder="Project ID (for update)" />
+      <input type="text" id="project-name" placeholder="Project Name" required />
+      <input type="text" id="project-description" placeholder="Description" required />
+      <select id="project-status">
+        <option value="active">Active</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button type="submit">Submit</button>
+    </form>
+
+    <h3>Delete Project</h3>
+    <form id="delete-form">
+      <input type="number" id="delete-id" placeholder="Project ID to delete" required />
+      <button type="submit">Delete</button>
+    </form>
+
+    <pre id="result"></pre>
+
+    <button onclick="location.href='/dashboard'">⬅ Back to Dashboard</button>
+  </div>
+
+  <script>
+    const resultEl = document.getElementById("result");
+
+    // GET Projects
+    document.getElementById("get-projects").addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/projects");
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    });
+
+    // POST / PUT Project
+    document.getElementById("project-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById("project-id").value;
+      const name = document.getElementById("project-name").value;
+      const description = document.getElementById("project-description").value;
+      const status = document.getElementById("project-status").value;
+
+      const method = id ? "PUT" : "POST";
+      const url = "/api/projects";
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify({
+            id: id ? Number(id) : undefined,
+            name,
+            description,
+            status
+          }),
+        });
+
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    });
+
+    // DELETE Project
+    document.getElementById("delete-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const id = document.getElementById("delete-id").value;
+
+      try {
+        const res = await fetch("/api/projects", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify({ id: Number(id) }),
+        });
+
+        const data = await res.json();
+        resultEl.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        resultEl.textContent = "Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+
+</html>
